@@ -41,11 +41,13 @@ const secondPromise = new Promise((resolve) => {
   const onClick = (even) => {
     if (even.button === 0) {
       document.removeEventListener('click', onClick);
+      document.removeEventListener('contextmenu', onClick);
       resolve('Second promise was resolved');
     }
 
     if (even.button === 2) {
       document.removeEventListener('contextmenu', onClick);
+      document.removeEventListener('click', onClick);
       rightClick = true;
       resolve('Second promise was resolved');
     }
@@ -62,23 +64,29 @@ secondPromise.then(() => {
 });
 
 const thirdPromise = new Promise((resolve, reject) => {
-  document.addEventListener('click', (ev) => {
-    leftClick = true;
-    ev.stopPropagation();
+  const dbClick = (dabl) => {
+    if (dabl.type === 'click') {
+      leftClick = true;
 
-    if (leftClick && rightClick) {
-      resolve();
+      if (rightClick) {
+        document.removeEventListener('click', dbClick);
+        document.removeEventListener('contextmenu', dbClick);
+        resolve();
+      }
+    } else if (dabl.type === 'contextmenu') {
+      dabl.preventDefault();
+      rightClick = true;
+
+      if (leftClick) {
+        document.removeEventListener('click', dbClick);
+        document.removeEventListener('contextmenu', dbClick);
+        resolve();
+      }
     }
-  });
+  };
 
-  document.addEventListener('contextmenu', (even) => {
-    even.preventDefault();
-    rightClick = true;
-
-    if (leftClick && rightClick) {
-      resolve();
-    }
-  });
+  document.addEventListener('click', dbClick);
+  document.addEventListener('contextmenu', dbClick);
 });
 
 thirdPromise.then(() => {
