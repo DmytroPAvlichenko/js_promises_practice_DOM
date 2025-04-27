@@ -1,1 +1,81 @@
 'use strict';
+
+function message(classLister, messageText) {
+  const div = document.createElement('div');
+
+  div.setAttribute('data-qa', 'notification');
+  div.classList.add(classLister);
+  div.textContent = messageText;
+
+  return div;
+}
+
+const firstPromise = new Promise((resolve, reject) => {
+  document.addEventListener('click', () => {
+    clearTimeout(timer);
+    resolve();
+  });
+
+  const timer = setTimeout(() => {
+    reject(new Error());
+  }, 3000);
+});
+
+firstPromise
+  .then(() => {
+    const successDiv = message('success', 'First promise was resolved');
+
+    document.body.appendChild(successDiv);
+  })
+  .catch(() => {
+    const errorDiv = message('error', 'First promise was rejected');
+
+    document.body.appendChild(errorDiv);
+  });
+
+const secondPromise = new Promise((resolve) => {
+  const onClick = (even) => {
+    if (even.button === 0 || even.button === 2) {
+      document.removeEventListener('click', onClick);
+      resolve('Second promise was resolved');
+    }
+  };
+
+  document.addEventListener('click', onClick);
+  document.addEventListener('contextmenu', onClick);
+});
+
+secondPromise.then(() => {
+  const secondDiv = message('success', 'Second promise was resolved');
+
+  document.body.appendChild(secondDiv);
+});
+
+const thirdPromise = new Promise((resolve, reject) => {
+  let leftClick = false;
+  let rightClick = false;
+
+  document.addEventListener('click', (ev) => {
+    leftClick = true;
+    ev.stopPropagation();
+
+    if (leftClick && rightClick) {
+      resolve();
+    }
+  });
+
+  document.addEventListener('contextmenu', (even) => {
+    even.preventDefault();
+    rightClick = true;
+
+    if (leftClick && rightClick) {
+      resolve();
+    }
+  });
+});
+
+thirdPromise.then(() => {
+  const thirdDiv = message('success', 'Third promise was resolved');
+
+  document.body.appendChild(thirdDiv);
+});
