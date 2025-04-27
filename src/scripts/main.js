@@ -18,11 +18,14 @@ const firstPromise = new Promise((resolve, reject) => {
     reject(new Error());
   }, 3000);
 
-  document.addEventListener('click', () => {
+  const onClick = () => {
     leftClick = true;
     clearTimeout(timer);
     resolve();
-  });
+    document.removeEventListener('click', onClick);
+  };
+
+  document.addEventListener('click', onClick);
 });
 
 firstPromise
@@ -64,24 +67,20 @@ secondPromise.then(() => {
 });
 
 const thirdPromise = new Promise((resolve, reject) => {
-  const dbClick = (dabl) => {
-    if (dabl.type === 'click') {
+  const dbClick = (dab) => {
+    if (dab.type === 'click') {
       leftClick = true;
+    }
 
-      if (rightClick) {
-        document.removeEventListener('click', dbClick);
-        document.removeEventListener('contextmenu', dbClick);
-        resolve();
-      }
-    } else if (dabl.type === 'contextmenu') {
-      dabl.preventDefault();
+    if (dab.type === 'contextmenu') {
+      dab.preventDefault();
       rightClick = true;
+    }
 
-      if (leftClick) {
-        document.removeEventListener('click', dbClick);
-        document.removeEventListener('contextmenu', dbClick);
-        resolve();
-      }
+    if (leftClick && rightClick) {
+      document.removeEventListener('click', dbClick);
+      document.removeEventListener('contextmenu', dbClick);
+      resolve('Third promise was resolved');
     }
   };
 
