@@ -10,15 +10,19 @@ function message(classLister, messageText) {
   return div;
 }
 
-const firstPromise = new Promise((resolve, reject) => {
-  document.addEventListener('click', () => {
-    clearTimeout(timer);
-    resolve();
-  });
+let leftClick = false;
+let rightClick = false;
 
+const firstPromise = new Promise((resolve, reject) => {
   const timer = setTimeout(() => {
     reject(new Error());
   }, 3000);
+
+  document.addEventListener('click', () => {
+    leftClick = true;
+    clearTimeout(timer);
+    resolve();
+  });
 });
 
 firstPromise
@@ -35,8 +39,14 @@ firstPromise
 
 const secondPromise = new Promise((resolve) => {
   const onClick = (even) => {
-    if (even.button === 0 || even.button === 2) {
+    if (even.button === 0) {
       document.removeEventListener('click', onClick);
+      resolve('Second promise was resolved');
+    }
+
+    if (even.button === 2) {
+      document.removeEventListener('contextmenu', onClick);
+      rightClick = true;
       resolve('Second promise was resolved');
     }
   };
@@ -52,9 +62,6 @@ secondPromise.then(() => {
 });
 
 const thirdPromise = new Promise((resolve, reject) => {
-  let leftClick = false;
-  let rightClick = false;
-
   document.addEventListener('click', (ev) => {
     leftClick = true;
     ev.stopPropagation();
